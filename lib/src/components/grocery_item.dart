@@ -7,27 +7,17 @@ class GroceryItems extends StatelessWidget {
   final GroceryItem grocery;
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      key: ValueKey(grocery.id),
-      padding: const EdgeInsets.all(10.0),
-      child: Row(
-        children: [
-          TColoredBox(
-            color: grocery.category.color,
-          ),
-          const SizedBox(
-            width: 15,
-          ),
-          Text(
-            grocery.name,
-            style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.white),
-          ),
-          const Spacer(),
-          Text(
-            grocery.quantity.toString(),
-            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.white60),
-          ),
-        ],
+    return ListTile(
+      leading: TColoredBox(color: grocery.category.color),
+      title: Text(
+        grocery.name,
+        style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.white),
+      ),
+      trailing: Text(
+        grocery.quantity.toString(),
+        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              color: Colors.white60,
+            ),
       ),
     );
   }

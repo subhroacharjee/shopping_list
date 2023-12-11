@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TColoredBox extends StatelessWidget {
-  TColoredBox({required this.color, this.size = 20});
+  TColoredBox({required this.color, this.size = 24});
   final Color color;
   final double size;
   @override
