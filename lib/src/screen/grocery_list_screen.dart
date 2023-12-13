@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list/src/components/grocery_item.dart';
-import 'package:shopping_list/src/data/dummy_items.dart';
+import 'package:shopping_list/src/models/groccery_items.dart';
 import 'package:shopping_list/src/screen/new_item_screen.dart';
 
 class GroceryListScreens extends StatefulWidget {
@@ -9,6 +9,7 @@ class GroceryListScreens extends StatefulWidget {
 }
 
 class _GroceryListScreensState extends State<GroceryListScreens> {
+  List<GroceryItem> groceryItems = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,25 +19,43 @@ class _GroceryListScreensState extends State<GroceryListScreens> {
         centerTitle: false,
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
+            onPressed: () async {
+              final newItem = await Navigator.of(context).push<GroceryItem>(
                 MaterialPageRoute(
                   builder: (ctx) => NewItemScreen(),
                 ),
               );
+
+              setState(() {
+                groceryItems.add(newItem!);
+              });
             },
             icon: const Icon(Icons.add),
           ),
         ],
       ),
-      body: ListView.builder(
-          itemCount: groceryItems.length,
-          itemBuilder: (ctx, idx) {
-            final item = groceryItems[idx];
-            return GroceryItems(
-              grocery: item,
-            );
-          }),
+      body: groceryItems.isEmpty
+          ? Center(
+              child: Text(
+                "No Items yet",
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+              ),
+            )
+          : ListView.builder(
+              itemCount: groceryItems.length,
+              itemBuilder: (ctx, idx) {
+                final item = groceryItems[idx];
+                return GroceryItems(
+                  grocery: item,
+                  onDismissed: () {
+                    setState(() {
+                      groceryItems.remove(groceryItems[idx]);
+                    });
+                  },
+                );
+              }),
     );
   }
 }
