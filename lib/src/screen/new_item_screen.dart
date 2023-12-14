@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shopping_list/src/components/colored_box.dart';
 import 'package:shopping_list/src/data/categories_data.dart';
 import 'package:shopping_list/src/models/category.dart';
@@ -12,19 +15,39 @@ class NewItemScreen extends StatefulWidget {
 class _NewItemScreenState extends State<NewItemScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  void _saveItem() {
+  void _saveItem() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
     _formKey.currentState!.save();
-    final newGrocery = GroceryItem(
-      id: "${DateTime.now().millisecondsSinceEpoch.abs()}",
-      name: _name,
-      quantity: _quantity,
-      category: _selectedCategory,
-    );
 
-    Navigator.of(context).pop(newGrocery);
+    final url = Uri.https("flutter-prep-c3220-default-rtdb.asia-southeast1.firebasedatabase.app",
+        "shopping_list.json");
+    final respone = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          "name": _name,
+          "quantity": _quantity,
+          "category": _selectedCategory.name,
+        }));
+
+    if (respone.statusCode == 200) {
+      Map<String, dynamic> body = const JsonDecoder().convert(respone.body);
+      if (!body.containsKey("name")) {
+        print(body);
+        return;
+      }
+      final newGrocery = GroceryItem(
+        id: "${body["name"]}",
+        name: _name,
+        quantity: _quantity,
+        category: _selectedCategory,
+      );
+
+      if (context.mounted) Navigator.of(context).pop(newGrocery);
+    }
   }
 
   var _name = '';
