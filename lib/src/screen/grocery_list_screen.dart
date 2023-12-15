@@ -14,6 +14,7 @@ class GroceryListScreens extends StatefulWidget {
 }
 
 class _GroceryListScreensState extends State<GroceryListScreens> {
+  var _isLoading = true;
   List<GroceryItem> groceryItems = [];
 
   @override
@@ -34,6 +35,7 @@ class _GroceryListScreensState extends State<GroceryListScreens> {
               category: categories.entries
                   .firstWhere((catItem) => catItem.value.name == entry.value["category"])
                   .value));
+          _isLoading = false;
         });
       }
     }).catchError((err) {
@@ -43,6 +45,34 @@ class _GroceryListScreensState extends State<GroceryListScreens> {
 
   @override
   Widget build(BuildContext context) {
+    Widget content = groceryItems.isEmpty
+        ? Center(
+            child: Text(
+              "No Items yet",
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+            ),
+          )
+        : ListView.builder(
+            itemCount: groceryItems.length,
+            itemBuilder: (ctx, idx) {
+              final item = groceryItems[idx];
+              return GroceryItems(
+                grocery: item,
+                onDismissed: () {
+                  setState(() {
+                    groceryItems.remove(groceryItems[idx]);
+                  });
+                },
+              );
+            });
+    if (_isLoading) {
+      content = Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your Groceries"),
@@ -65,28 +95,7 @@ class _GroceryListScreensState extends State<GroceryListScreens> {
           ),
         ],
       ),
-      body: groceryItems.isEmpty
-          ? Center(
-              child: Text(
-                "No Items yet",
-                style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-              ),
-            )
-          : ListView.builder(
-              itemCount: groceryItems.length,
-              itemBuilder: (ctx, idx) {
-                final item = groceryItems[idx];
-                return GroceryItems(
-                  grocery: item,
-                  onDismissed: () {
-                    setState(() {
-                      groceryItems.remove(groceryItems[idx]);
-                    });
-                  },
-                );
-              }),
+      body: content,
     );
   }
 }

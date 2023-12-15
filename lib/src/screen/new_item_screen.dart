@@ -14,8 +14,12 @@ class NewItemScreen extends StatefulWidget {
 
 class _NewItemScreenState extends State<NewItemScreen> {
   final _formKey = GlobalKey<FormState>();
+  var _isLoading = false;
 
   void _saveItem() async {
+    setState(() {
+      _isLoading = true;
+    });
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -48,6 +52,9 @@ class _NewItemScreenState extends State<NewItemScreen> {
 
       if (context.mounted) Navigator.of(context).pop(newGrocery);
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   var _name = '';
@@ -56,101 +63,109 @@ class _NewItemScreenState extends State<NewItemScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Widget content = _renderMainFormScreen(context);
+    if (_isLoading) {
+      content = Center(
+        child: CircularProgressIndicator(),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("Add a new item"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              _TextFormField(
-                "Name",
-                (val) => val.trim().length <= 1 || val.trim().length > 50,
-                onSave: (value) => _name = value!,
-              ),
-              _TextFormField(
-                "Quantity",
-                (val) => int.tryParse(val) == null || int.tryParse(val)! <= 0,
-                isSring: false,
-                onSave: (value) => _quantity = int.parse(value!),
-              ),
-              DropdownButtonFormField(
-                value: _selectedCategory,
-                items: [
-                  for (final category in categories.entries)
-                    DropdownMenuItem(
-                      value: category.value,
-                      onTap: () {},
-                      child: Row(children: [
-                        TColoredBox(
-                          color: category.value.color,
-                          size: 16,
-                        ),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          category.value.name,
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                color: Theme.of(context).colorScheme.secondary,
-                              ),
-                        ),
-                      ]),
-                    )
-                ],
-                onChanged: (obj) {
-                  setState(() {
-                    _selectedCategory = obj!;
-                  });
-                },
-                decoration: InputDecoration(
-                  label: Text(
-                    "Category",
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 3, color: Theme.of(context).colorScheme.secondary),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 3, color: Theme.of(context).colorScheme.secondary),
-                  ),
+      body: content,
+    );
+  }
+
+  Widget _renderMainFormScreen(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            _TextFormField(
+              "Name",
+              (val) => val.trim().length <= 1 || val.trim().length > 50,
+              onSave: (value) => _name = value!,
+            ),
+            _TextFormField(
+              "Quantity",
+              (val) => int.tryParse(val) == null || int.tryParse(val)! <= 0,
+              isSring: false,
+              onSave: (value) => _quantity = int.parse(value!),
+            ),
+            DropdownButtonFormField(
+              value: _selectedCategory,
+              items: [
+                for (final category in categories.entries)
+                  DropdownMenuItem(
+                    value: category.value,
+                    onTap: () {},
+                    child: Row(children: [
+                      TColoredBox(
+                        color: category.value.color,
+                        size: 16,
+                      ),
+                      const SizedBox(
+                        width: 6,
+                      ),
+                      Text(
+                        category.value.name,
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                      ),
+                    ]),
+                  )
+              ],
+              onChanged: (obj) {
+                setState(() {
+                  _selectedCategory = obj!;
+                });
+              },
+              decoration: InputDecoration(
+                label: Text(
+                  "Category",
+                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 3, color: Theme.of(context).colorScheme.secondary),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 3, color: Theme.of(context).colorScheme.secondary),
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _formKey.currentState!.reset(),
-                    child: const Text("Reset"),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: () => _formKey.currentState!.reset(),
+                  child: const Text("Reset"),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  ElevatedButton(
-                    onPressed: _saveItem,
-                    child: Text("Add item"),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                ElevatedButton(
+                  onPressed: _saveItem,
+                  child: Text("Add item"),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                ],
-              )
-            ],
-          ),
+                ),
+              ],
+            )
+          ],
         ),
       ),
     );
