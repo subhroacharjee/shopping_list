@@ -25,6 +25,12 @@ class _GroceryListScreensState extends State<GroceryListScreens> {
     http.get(url, headers: {
       'Content-Type': 'application/json',
     }).then((response) {
+      if (response.body == 'null') {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
       Map<String, dynamic> body = const JsonDecoder().convert(response.body);
       for (final entry in body.entries) {
         setState(() {
@@ -39,7 +45,35 @@ class _GroceryListScreensState extends State<GroceryListScreens> {
         });
       }
     }).catchError((err) {
+      setState(() {
+        _isLoading = false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Something went wrong please try again!"),
+          ),
+        );
+      });
       print("Error: $err");
+    });
+  }
+
+  void _removeItem(GroceryItem item, int idx) {
+    setState(() {
+      groceryItems.remove(groceryItems[idx]);
+    });
+
+    final url = Uri.https("flutter-prep-c3220-default-rtdb.asia-southeast1.firebasedatabase.app",
+        "shopping_list/${item.id}.json");
+    http.delete(url).catchError((err) {
+      print("Err:$err");
+      setState(() {
+        groceryItems.insert(idx, item);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Unable to delete at this moment."),
+          ),
+        );
+      });
     });
   }
 
@@ -61,9 +95,7 @@ class _GroceryListScreensState extends State<GroceryListScreens> {
               return GroceryItems(
                 grocery: item,
                 onDismissed: () {
-                  setState(() {
-                    groceryItems.remove(groceryItems[idx]);
-                  });
+                  _removeItem(item, idx);
                 },
               );
             });
